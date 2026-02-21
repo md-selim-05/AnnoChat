@@ -42,7 +42,11 @@
 
         socket.on('chat message', function (data) {
             const item = document.createElement('li');
-            item.textContent = data.user + ": " + data.text;
+
+            item.innerHTML = `<strong style="color:${data.color}">
+            ${data.user}
+            </strong>: ${data.text}`;
+
             messages.appendChild(item);
         });
     </script>
