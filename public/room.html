@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Room Options</title>
+  <link rel="stylesheet" href="./css/room.css">
+</head>
+<body class="center">
+
+  <div class="card">
+    <h2>Your Name</h2>
+    <input id="username" placeholder="Enter your name" />
+
+    <h2>Create Room</h2>
+    <button onclick="createRoom()">Create Room</button>
+
+    <hr>
+
+    <h2>Join Room</h2>
+    <input id="roomKey" placeholder="Enter Room Key" />
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+
+  <script>
+    function createRoom() {
+      const name = document.getElementById("username").value;
+      if (!name) return alert("Enter your name");
+
+      window.location.href = `/chat?create=true&name=${name}`;
+    }
+
+    function joinRoom() {
+      const name = document.getElementById("username").value;
+      const room = document.getElementById("roomKey").value;
+
+      if (!name || !room) return alert("Fill all fields");
+
+      window.location.href = `/chat?room=${room}&name=${name}`;
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="css/chat.css" />
+</head>
+<body>
+
+  <div class="chat-container">
+    <ul id="messages"></ul>
+
+    <form id="form">
+      <input id="input" autocomplete="off" placeholder="Type a message..." />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get("name") || "Guest";
+    const create = params.get("create");
+    const room = params.get("room");
+
+    if (create) {
+      socket.emit("create room", username);
+    } else if (room) {
+      socket.emit("join room", { username, roomId: room });
+    }
+
+    socket.on("room created", (roomId) => {
+      window.history.replaceState({}, '', `/chat?room=${roomId}&name=${username}`);
+      alert("Share this room key: " + roomId);
+    });
+
+    const messages = document.getElementById("messages");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (input.value.trim() !== "") {
+        socket.emit("chat message", { text: input.value });
+        input.value = "";
+        input.focus();
+      }
+    });
+
+    socket.on("chat message", function (data) {
+      const li = document.createElement("li");
+
+      if (data.system) {
+        li.classList.add("system");
+        li.textContent = data.text;
+      } else {
+        li.innerHTML = `
+          <span class="username" style="color:${data.color}">
+            ${data.user}
+          </span>
+          <span class="message-text">${data.text}</span>
+        `;
+      }
+
+      messages.appendChild(li);
+
+      // Auto scroll to bottom
+      messages.scrollTop = messages.scrollHeight;
+
+      // Keep keyboard open on mobile
+      input.focus();
+    });
+  </script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Server } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 const server = createServer(app);
@@ -11,13 +12,22 @@ const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-app.use(express.static(__dirname));
+// Serve static files
+app.use(express.static(join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'index.html'));
+  res.sendFile(join(__dirname, 'public/index.html'));
 });
 
-// 🎨 Random Color Generator
+app.get('/room', (req, res) => {
+  res.sendFile(join(__dirname, 'public/room.html'));
+});
+
+app.get('/chat', (req, res) => {
+  res.sendFile(join(__dirname, 'public/chat.html'));
+});
+
+// Random color generator
 function getRandomColor() {
   const colors = [
     "#e74c3c", "#3498db", "#2ecc71",
@@ -27,26 +37,47 @@ function getRandomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// 💬 Socket Logic
 io.on('connection', (socket) => {
-  console.log('User connected');
 
-  socket.on('join', (username) => {
+  // Create Room
+  socket.on('create room', (username) => {
+    const roomId = uuidv4().slice(0, 6);
+
+    socket.join(roomId);
     socket.username = username;
+    socket.roomId = roomId;
     socket.color = getRandomColor();
 
-    io.emit('chat message', {
+    socket.emit('room created', roomId);
+
+    io.to(roomId).emit('chat message', {
       user: "System",
-      text: `${username} joined the chat`,
-      color: "#888",
+      text: `${username} created the room`,
+      color: "#aaa",
       system: true
     });
   });
 
-  socket.on('chat message', (data) => {
-    if (!socket.username) return;
+  // Join Room
+  socket.on('join room', ({ username, roomId }) => {
+    socket.join(roomId);
+    socket.username = username;
+    socket.roomId = roomId;
+    socket.color = getRandomColor();
 
-    io.emit('chat message', {
+    io.to(roomId).emit('chat message', {
+      user: "System",
+      text: `${username} joined the room`,
+      color: "#aaa",
+      system: true
+    });
+  });
+
+  // Chat Message
+  socket.on('chat message', (data) => {
+    if (!socket.roomId) return;
+
+    io.to(socket.roomId).emit('chat message', {
       user: socket.username,
       text: data.text,
       color: socket.color,
@@ -55,11 +86,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    if (socket.username) {
-      io.emit('chat message', {
+    if (socket.roomId && socket.username) {
+      io.to(socket.roomId).emit('chat message', {
         user: "System",
-        text: `${socket.username} left the chat`,
-        color: "#888",
+        text: `${socket.username} left the room`,
+        color: "#aaa",
         system: true
       });
     }
