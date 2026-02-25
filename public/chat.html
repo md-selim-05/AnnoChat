@@ -54,7 +54,14 @@
       socket.emit("join room", { username: params.name, roomId: params.room });
     }
 
-    socket.on("room created", (roomId) => document.getElementById("display-room-id").textContent = roomId);
+    socket.on("room created", (roomId) => {
+      document.getElementById("display-room-id").textContent = roomId;
+      
+      // FIX: Change action to 'join' and save the roomId so refreshing doesn't create a new room
+      params.action = 'join';
+      params.room = roomId;
+      sessionStorage.setItem('chatParams', JSON.stringify(params));
+    });
     socket.on("room joined", (roomId) => document.getElementById("display-room-id").textContent = roomId);
     socket.on("room update", (count) => document.getElementById("participant-count").textContent = count);
     socket.on("invalid room", (msg) => { alert(msg); window.location.href = "/room"; });
@@ -165,6 +172,22 @@
       messages.appendChild(li);
       messages.scrollTop = messages.scrollHeight;
       input.focus();
+    });
+    // --- Mobile Keyboard Scroll Fix ---
+    function scrollToBottom() {
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Listens for the mobile keyboard popping up (which resizes the visual viewport)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", scrollToBottom);
+    } else {
+      window.addEventListener("resize", scrollToBottom);
+    }
+
+    // Extra fallback: scroll to bottom when user taps the input box
+    input.addEventListener("focus", () => {
+      setTimeout(scrollToBottom, 100); // 100ms delay gives the keyboard time to fully slide up
     });
   </script>
 </body>
