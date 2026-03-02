@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chat Room</title>
-  <link rel="stylesheet" href="/chat-page/chat.css" />
+  <link rel="stylesheet" href="./chat-page/chat.css">
 </head>
+
 <body>
   <div class="chat-container">
     <div id="room-header">
@@ -19,7 +21,7 @@
         <button id="exit-btn">Exit</button>
       </div>
     </div>
-    
+
     <ul id="messages"></ul>
 
     <div id="reply-preview">
@@ -38,15 +40,15 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let replyingTo = null; 
+    let replyingTo = null;
 
     const chatParamsStr = sessionStorage.getItem('chatParams');
     if (!chatParamsStr) {
-      window.location.href = "/room"; 
+      window.location.href = "/room"; // Backend route par bhej raha hai
     }
-    
+
     const params = JSON.parse(chatParamsStr);
-    window.history.replaceState({}, '', `/chat`);
+    window.history.replaceState({}, '', `../chat-page/chat`);
 
     if (params.action === 'create') {
       socket.emit("create room", { username: params.name, capacity: params.capacity });
@@ -56,7 +58,7 @@
 
     socket.on("room created", (roomId) => {
       document.getElementById("display-room-id").textContent = roomId;
-      
+
       // FIX: Change action to 'join' and save the roomId so refreshing doesn't create a new room
       params.action = 'join';
       params.room = roomId;
@@ -64,11 +66,14 @@
     });
     socket.on("room joined", (roomId) => document.getElementById("display-room-id").textContent = roomId);
     socket.on("room update", (count) => document.getElementById("participant-count").textContent = count);
-    socket.on("invalid room", (msg) => { alert(msg); window.location.href = "/room"; });
+    socket.on("invalid room", (msg) => {
+      alert(msg);
+      window.location.href = "/room"; //
+    });
 
     document.getElementById("copy-btn").addEventListener("click", () => {
       const roomId = document.getElementById("display-room-id").textContent;
-      if(roomId !== "...") {
+      if (roomId !== "...") {
         navigator.clipboard.writeText(roomId).then(() => {
           const btn = document.getElementById("copy-btn");
           btn.textContent = "✅";
@@ -87,7 +92,7 @@
 
     document.getElementById("exit-btn").addEventListener("click", () => {
       sessionStorage.removeItem('chatParams');
-      window.location.href = "/room"; 
+      window.location.href = "/room"; //
     });
 
     document.getElementById("cancel-reply").addEventListener("click", () => {
@@ -103,7 +108,7 @@
       e.preventDefault();
       if (input.value.trim() !== "") {
         socket.emit("chat message", { text: input.value, replyTo: replyingTo });
-        
+
         input.value = "";
         replyingTo = null;
         document.getElementById("reply-preview").style.display = "none";
@@ -138,7 +143,7 @@
         // Create a wrapper to hold both the bubble and the reply button side-by-side
         const msgWrapper = document.createElement("div");
         msgWrapper.classList.add("msg-wrapper");
-        
+
         // The bubble only contains the text and background color now
         const msgBubble = document.createElement("div");
         msgBubble.classList.add("msg-bubble");
@@ -191,4 +196,5 @@
     });
   </script>
 </body>
+
 </html>

@@ -18,16 +18,15 @@ app.use(express.static(join(__dirname, 'public')));
 // ---- CORRECTED ROUTES ----
 
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'public/landing-page/landing.html'));
+  res.sendFile(join(__dirname, 'public/landing-page/landing.html')); //
 });
 
 app.get('/room', (req, res) => {
-  res.sendFile(join(__dirname, 'public/room-page/room.html'));
+  res.sendFile(join(__dirname, 'public/room-page/room.html')); //
 });
 
 app.get('/chat', (req, res) => {
-  // FIXED: Updated path to point inside the 'chat-page' folder
-  res.sendFile(join(__dirname, 'public/chat-page/chat.html'));
+  res.sendFile(join(__dirname, 'public/chat-page/chat.html'));//
 });
 
 // --------------------------
