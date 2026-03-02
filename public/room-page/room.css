@@ -306,7 +306,7 @@ input[type="number"] {
 }
 
 .hero-logo > img{
-  width: 90px;
+  width: 70px;
 }
 
 .time-display {
@@ -410,10 +410,10 @@ input[type="number"] {
   }
 
   .hero-logo {
-    top: 20px;
-    left: 20px;
+    top: 10px;
+    left: 10px;
     bottom: auto;
-    background: rgba(255, 255, 255, 0.3);
+    background: transparent;
     padding: 6px 14px;
     border-radius: 8px;
     font-size: 0.85rem;
